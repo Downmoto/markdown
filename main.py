@@ -45,14 +45,57 @@ class Markdown:
 
     def heading(self, text: str, level: int = 1) -> None:
         """
-        Adds formatted heading to content
+        Appends formatted heading to content
 
         Parameters
         ----------
-        test: str
+        text : str
             text to be formatted into heading
         level : int
             heading level, i.e. amount of '#' added before text (default is 1)
         """
 
         self.content += f'{"#"*level} {text}\n'
+        
+    def paragraph(self, text: str) -> None:
+        """
+        Appends paragraph to content
+        
+        Parameters
+        ----------
+        text : str
+            paragraph to append
+        """
+        
+        self.content += f'{text}\n'
+        
+    def table(self, header: list, rows: 'list[list[str]]') -> None:
+        """
+        Appends a formatted table to content
+        
+        Parameters
+        ----------
+        header : list
+            list of table headers in order of appearance
+        rows : list
+            2D array of table rows
+            
+        Throws
+        ------
+        MarkdownException
+            length of row and header diff
+        MarkdownException    
+            rows param not a 2D array
+        """
+        
+        table: str = f"|{'|'.join(header)}|\n|{'|'.join(['---' for _ in header])}|\n"
+        r: str = ''
+        for row in rows:
+            if type(row) is not list:
+                raise MarkdownException('rows must be a 2D array of lists')
+            if len(row) is not len(header):
+                raise MarkdownException('rows must have the same amount of cells as the header')
+                
+            r += f"|{'|'.join(row)}|\n"
+            
+        self.content += table + r
