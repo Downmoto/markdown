@@ -1,3 +1,5 @@
+from typing import Callable
+
 class MarkdownException(Exception):
     """
     Exception raised for errors in Markdown Class
@@ -24,26 +26,49 @@ class Markdown:
         write path, should include filename at the end
     content : str
         stores the content of the markdown file (default is '')
+        
+    Notes
+    -----
+    content, filepath, and paragraph pre_processors are exposed to end user.
     """
 
     def __init__(self, filepath: str, content: str = '') -> None:
         self.filepath: str = filepath if filepath.endswith(
             '.md') else filepath + '.md'
         self.content: str = content
+        
+        self.pre_processors: list[Callable[[str], str]] = []
 
-    def markdown(self, mode: str = 'w'):
+    def markdown(self, mode: str = 'w') -> str:
         """
-        Writes content to filepath
+        Writes content to filepath, returns filepath
 
         Parameters
         ----------
         mode : str
             write mode (default to 'w')
         """
+        
         with open(self.filepath, mode) as f:
             if mode == 'a' or mode == 'a+':
                 f.write('\n')
             f.write(self.content)
+            
+        return self.filepath
+            
+    def add(self, func: Callable[[str], str]) -> None:
+        """
+        Add a paragraph pre_processor. They run on the text param of paragraphs
+        directly before being appended to content
+        
+        Parameters
+        ----------
+        func : function
+            pre processer function must take in a string and return a string
+            they run in the order they are added
+        """
+        
+        self.pre_processors.append(func)
 
     def heading(self, text: str, level: int = 1) -> None:
         """
@@ -68,8 +93,13 @@ class Markdown:
         text : str
             paragraph to append
         """
+        
+        t = text
+        
+        for f in self.pre_processors:
+            t = f(t)
 
-        self.content += f'{text}\n'
+        self.content += f'{t}\n'
 
     def table(self, header: list, rows: 'list[list[str]]') -> None:
         """
