@@ -18,7 +18,7 @@ class Markdown:
     """
     Markdown class.
 
-    all methods append a single newline
+    all methods affecting content append a single newline
 
     Attributes
     ----------
